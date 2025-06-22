@@ -40,7 +40,7 @@ public class WikiArticleCrudController {
             .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public WikiArticleDto getById(@PathVariable Long id) {
         return articleRepo.findById(id)
             .map(a -> new WikiArticleDto(a.getId(), a.getTitle(), a.getContent()))
@@ -58,14 +58,14 @@ public class WikiArticleCrudController {
         return articleService.createArticlesBulk(articles);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     public WikiArticleDto update(@PathVariable Long id, @RequestBody WikiArticle article) {
         article.setId(id);
         WikiArticle saved = articleRepo.save(article);
         return new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public void delete(@PathVariable Long id) {
         articleRepo.deleteById(id);
     }
