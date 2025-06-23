@@ -71,7 +71,7 @@ public class WikiArticleService {
 
     public WikiArticleDto createArticle(WikiArticle article) {
         WikiArticle saved = articleRepo.save(article);
-        cache.clear(); // Очистить кэш, чтобы не было устаревших данных
+        cache.clear(); 
         return new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
     }
 
