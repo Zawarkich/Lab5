@@ -26,9 +26,13 @@ public class SearchHistoryService {
 
     @Transactional
     public SearchHistory saveHistoryWithArticles(SearchHistory history) {
+        SearchHistory cached = (SearchHistory) cache.get("save:" + history.getSearchTerm());
+        if (cached != null) {
+            return cached;
+        }
         history.getArticles().forEach(article -> article.setHistory(history));
         SearchHistory saved = historyRepo.save(history);
-        cache.put("history_" + saved.getId(), saved);
+        cache.put("save:" + history.getSearchTerm(), saved);
         return saved;
     }
 

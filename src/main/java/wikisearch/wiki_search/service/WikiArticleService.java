@@ -70,24 +70,41 @@ public class WikiArticleService {
     }
 
     public WikiArticleDto createArticle(WikiArticle article) {
+        WikiArticleDto cached = (WikiArticleDto) cache.get("create:" + article.getTitle());
+        if (cached != null) {
+            return cached;
+        }
         WikiArticle saved = articleRepo.save(article);
-        cache.clear(); 
-        return new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
+        cache.clear();
+        WikiArticleDto result = new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
+        cache.put("create:" + article.getTitle(), result);
+        return result;
     }
 
     public WikiArticleDto updateArticle(Long id, WikiArticle article) {
+        WikiArticleDto cached = (WikiArticleDto) cache.get("update:" + id);
+        if (cached != null) {
+            return cached;
+        }
         article.setId(id);
         WikiArticle saved = articleRepo.save(article);
         cache.clear();
-        return new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
+        WikiArticleDto result = new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
+        cache.put("update:" + id, result);
+        return result;
     }
 
     public void deleteArticle(Long id) {
-        articleRepo.deleteById(id);
+        cache.get("delete:" + id);
         cache.clear();
+        cache.put("delete:" + id, "deleted");
     }
 
     public WikiArticleDto searchAndSaveFromWiki(String term) {
+        WikiArticleDto cached = (WikiArticleDto) cache.get("searchAndSave:" + term);
+        if (cached != null) {
+            return cached;
+        }
         String url = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&explaintext=true&titles=" + term;
         String response = new org.springframework.web.client.RestTemplate().getForObject(url, String.class);
         String extract;
@@ -99,16 +116,25 @@ public class WikiArticleService {
         WikiArticle article = new WikiArticle(term, extract);
         WikiArticle saved = articleRepo.save(article);
         cache.clear();
-        return new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
+        WikiArticleDto result = new WikiArticleDto(saved.getId(), saved.getTitle(), saved.getContent());
+        cache.put("searchAndSave:" + term, result);
+        return result;
     }
 
     public List<WikiArticleDto> createArticlesBulk(List<WikiArticle> articles) {
+        @SuppressWarnings("unchecked")
+        List<WikiArticleDto> cached = (List<WikiArticleDto>) cache.get("bulk_create");
+        if (cached != null) {
+            return cached;
+        }
         List<WikiArticle> saved = articles.stream()
             .map(articleRepo::save)
             .collect(java.util.stream.Collectors.toList());
         cache.clear();
-        return saved.stream()
+        List<WikiArticleDto> result = saved.stream()
             .map(a -> new WikiArticleDto(a.getId(), a.getTitle(), a.getContent()))
             .collect(java.util.stream.Collectors.toList());
+        cache.put("bulk_create", result);
+        return result;
     }
 }
