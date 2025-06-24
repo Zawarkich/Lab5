@@ -31,10 +31,13 @@ class WikiArticleServiceTest {
 
     @Test
     void testCreateArticle() {
-        WikiArticle article = new WikiArticle("title", "content");
-        WikiArticle saved = new WikiArticle("title", "content");
-        saved.setId(1L);
+        WikiArticle article = mock(WikiArticle.class);
+        WikiArticle saved = mock(WikiArticle.class);
+        WikiArticleDto dtoMock = mock(WikiArticleDto.class);
         when(articleRepo.save(article)).thenReturn(saved);
+        when(saved.getId()).thenReturn(1L);
+        when(saved.getTitle()).thenReturn("title");
+        when(saved.getContent()).thenReturn("content");
         WikiArticleDto dto = service.createArticle(article);
         assertEquals("title", dto.getTitle());
         assertEquals("content", dto.getContent());
@@ -43,12 +46,18 @@ class WikiArticleServiceTest {
 
     @Test
     void testCreateArticlesBulk() {
-        WikiArticle a1 = new WikiArticle("t1", "c1");
-        WikiArticle a2 = new WikiArticle("t2", "c2");
-        WikiArticle s1 = new WikiArticle("t1", "c1"); s1.setId(1L);
-        WikiArticle s2 = new WikiArticle("t2", "c2"); s2.setId(2L);
+        WikiArticle a1 = mock(WikiArticle.class);
+        WikiArticle a2 = mock(WikiArticle.class);
+        WikiArticle s1 = mock(WikiArticle.class);
+        WikiArticle s2 = mock(WikiArticle.class);
         when(articleRepo.save(a1)).thenReturn(s1);
         when(articleRepo.save(a2)).thenReturn(s2);
+        when(s1.getId()).thenReturn(1L);
+        when(s1.getTitle()).thenReturn("t1");
+        when(s1.getContent()).thenReturn("c1");
+        when(s2.getId()).thenReturn(2L);
+        when(s2.getTitle()).thenReturn("t2");
+        when(s2.getContent()).thenReturn("c2");
         List<WikiArticleDto> dtos = service.createArticlesBulk(Arrays.asList(a1, a2));
         assertEquals(2, dtos.size());
         assertEquals("t1", dtos.get(0).getTitle());
@@ -57,8 +66,14 @@ class WikiArticleServiceTest {
 
     @Test
     void testGetAllArticles() {
-        WikiArticle a1 = new WikiArticle("t1", "c1"); a1.setId(1L);
-        WikiArticle a2 = new WikiArticle("t2", "c2"); a2.setId(2L);
+        WikiArticle a1 = mock(WikiArticle.class);
+        WikiArticle a2 = mock(WikiArticle.class);
+        when(a1.getId()).thenReturn(1L);
+        when(a1.getTitle()).thenReturn("t1");
+        when(a1.getContent()).thenReturn("c1");
+        when(a2.getId()).thenReturn(2L);
+        when(a2.getTitle()).thenReturn("t2");
+        when(a2.getContent()).thenReturn("c2");
         when(cache.get("all_articles")).thenReturn(null);
         when(articleRepo.findAll()).thenReturn(Arrays.asList(a1, a2));
         List<WikiArticleDto> dtos = service.getAllArticles();
@@ -67,7 +82,10 @@ class WikiArticleServiceTest {
 
     @Test
     void testGetArticleById() {
-        WikiArticle a1 = new WikiArticle("t1", "c1"); a1.setId(1L);
+        WikiArticle a1 = mock(WikiArticle.class);
+        when(a1.getId()).thenReturn(1L);
+        when(a1.getTitle()).thenReturn("t1");
+        when(a1.getContent()).thenReturn("c1");
         when(cache.get("article:1")).thenReturn(null);
         when(articleRepo.findById(1L)).thenReturn(Optional.of(a1));
         WikiArticleDto dto = service.getArticleById(1L);
@@ -76,9 +94,12 @@ class WikiArticleServiceTest {
 
     @Test
     void testUpdateArticle() {
-        WikiArticle a1 = new WikiArticle("t1", "c1");
-        WikiArticle saved = new WikiArticle("t1", "c1"); saved.setId(1L);
+        WikiArticle a1 = mock(WikiArticle.class);
+        WikiArticle saved = mock(WikiArticle.class);
         when(articleRepo.save(a1)).thenReturn(saved);
+        when(saved.getId()).thenReturn(1L);
+        when(saved.getTitle()).thenReturn("t1");
+        when(saved.getContent()).thenReturn("c1");
         WikiArticleDto dto = service.updateArticle(1L, a1);
         assertEquals(1L, dto.getId());
     }
